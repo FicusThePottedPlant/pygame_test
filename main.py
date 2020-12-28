@@ -4,14 +4,15 @@ from load import *
 
 class Board:
     # создание поля
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int, file):
         self.width = width
         self.height = height
         self.board = list()
 
         self.player_pos = None
-        # значения по умолчанию
-        self.level = load_level('map.txt')
+
+        self.level = file
+
         self.set_view()
 
     def cell_list(self):
@@ -106,12 +107,22 @@ class Tile(pygame.sprite.Sprite):
             '$': load_image('mar.png')
         }
         self.image = tile_images[type_of_tile]
+        self.image = pygame.transform.smoothscale(self.image,
+                                                  (500 // len(file),
+                                                   500 // len(file))) if type_of_tile != '$' else self.image
         self.status = type_of_tile
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
 
     def get_status(self):
         return self.status
+
+
+my_level = input()
+try:
+    file = load_level(my_level)
+except FileNotFoundError:
+    exit(print('File not found'))
 
 
 def terminate():
@@ -142,8 +153,8 @@ if __name__ == '__main__':
     running = True
     all_sprites = pygame.sprite.Group()
     fps = 10
-    game = Board(11, 11)
-    game.set_view(0, 0, 50)
+    game = Board(len(file), len(file[0]), file)
+    game.set_view(0, 0, 500 // len(file))
 
     while running:
 
@@ -151,7 +162,7 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 running = False
 
-        game.update()
+            game.update()
         all_sprites.draw(screen)
         clock.tick(fps)
         pygame.display.flip()
